@@ -143,6 +143,7 @@ function GTween:setPaused(value)
 	self._paused = value
 	if self._paused then
 		GTween.tickList[self] = nil
+		GTween.tempTickList[self] = nil
 		if self.target.removeEventListener ~= nil then 
 			self.target:removeEventListener("_", self.invalidate, self) 
 		end
