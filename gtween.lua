@@ -362,6 +362,7 @@ function GTween:swapValues()
 	for n,v in pairs(self._rangeValues) do
 		self._rangeValues[n] = -v
 	end
+	self.calculatedPosition = nil
 	if self._position < 0 then
 		local pos = self.positionOld
 		self:setPosition(0)
