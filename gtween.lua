@@ -31,7 +31,7 @@ Notes:
 	* - deterministic, so setting a position on a tween will (almost) always result in predictable results
 ]]
 
-GTween = gideros.class(EventDispatcher)
+GTween = Core.class(EventDispatcher)
 
 function GTween.linearEase(a, b, c, d)
 	return a
