@@ -61,8 +61,9 @@ GTween.pauseAll = false
 GTween.timeScaleAll = 1
 
 GTween.tickList = setmetatable({}, {__mode="k"})
-GTween.tempTickList = {}
 GTween.gcLockList = {}
+
+local copyTickList = {}
 
 function GTween.staticInit()
 	GTween.shape = Shape.new()
@@ -78,11 +79,14 @@ function GTween.staticTick()
 	end
 	local dt = (GTween.time - t) * GTween.timeScaleAll
 	for tween in pairs(GTween.tickList) do
-		tween:setPosition(tween._position + (tween.useFrames and GTween.timeScaleAll or dt) * tween.timeScale)
+		copyTickList[#copyTickList + 1] = tween
 	end
-	for k,v in pairs(GTween.tempTickList) do
-		GTween.tickList[k] = v
-		GTween.tempTickList[k] = nil
+	for i=1,#copyTickList do
+		local tween = copyTickList[i]
+		tween:setPosition(tween._position + (tween.useFrames and GTween.timeScaleAll or dt) * tween.timeScale)
+	end	
+	for i=#copyTickList,1,-1 do
+		copyTickList[i] = nil
 	end
 end
 
@@ -143,7 +147,6 @@ function GTween:setPaused(value)
 	self._paused = value
 	if self._paused then
 		GTween.tickList[self] = nil
-		GTween.tempTickList[self] = nil
 		if self.target.removeEventListener ~= nil then 
 			self.target:removeEventListener("_", self.invalidate, self) 
 		end
@@ -159,12 +162,25 @@ function GTween:setPaused(value)
 			self.positionOld = 0
 			self._position = -self:getDelay()
 		end
-		GTween.tempTickList[self] = true
+		GTween.tickList[self] = true
 		if self.target.addEventListener ~= nil then 
 			self.target:addEventListener("_", self.invalidate, self) 
 		else
 			GTween.gcLockList[self] = true		
 		end
+	end
+end
+
+function GTween.stopAll()
+	for k,v in pairs(GTween.tickList) do
+		if k.target.removeEventListener ~= nil then 
+			k.target:removeEventListener("_", k.invalidate, k)
+		end
+		GTween.tickList[k] = nil	
+	end
+
+	for k,v in pairs(GTween.gcLockList) do
+		GTween.gcLockList[k] = nil
 	end
 end
 
